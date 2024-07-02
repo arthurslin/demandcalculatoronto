@@ -41,7 +41,6 @@ def get_monthlydem():
 
     df = pd.DataFrame(flattened_data)
 
-    # Save to Excel
     df.to_excel('demandbymonth.xlsx', index=False)
     
 get_monthlydem()
