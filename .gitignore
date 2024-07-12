@@ -4,3 +4,22 @@ oor/Purchase Order Due By Date (Key Report).xlsx
 invalid/invalid.xlsx
 inventory/Global Inventory.xlsx
 mosreport.xlsx
+ArthurLin.xml
+generateoo.spec
+version_file.txt
+build/generateoo/Analysis-00.toc
+build/generateoo/base_library.zip
+build/generateoo/EXE-00.toc
+build/generateoo/generateoo.pkg
+build/generateoo/PKG-00.toc
+build/generateoo/PYZ-00.pyz
+build/generateoo/PYZ-00.toc
+build/generateoo/warn-generateoo.txt
+build/generateoo/xref-generateoo.html
+build/generateoo/localpycs/pyimod01_archive.pyc
+build/generateoo/localpycs/pyimod02_importers.pyc
+build/generateoo/localpycs/pyimod03_ctypes.pyc
+build/generateoo/localpycs/pyimod04_pywin32.pyc
+build/generateoo/localpycs/struct.pyc
+dist/generateoo.exe
+ArthurLin.xml
