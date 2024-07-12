@@ -14,7 +14,7 @@ class PartDesc:
 def get_monthlydem():
     warnings.simplefilter(action='ignore', category=UserWarning)
     reportdir = "UseReport"
-    classpath = glob.glob(os.path.join(reportdir, "*xlsx"))
+    classpath = glob.glob(os.path.join(reportdir, "*.xlsx"))
     if not classpath:
         raise FileNotFoundError("Classification document not found")
     
@@ -23,13 +23,12 @@ def get_monthlydem():
     item_table = []
     
     for i in range(len(df)):
-        date = df.iloc[i,3].to_pydatetime()
+        date = df.iloc[i,3].to_pydatetime()  # Assuming the date column is at index 3
         month = date.month
         year = date.year
-        pn = str(df.iloc[i,0])
-        quantity = df.iloc[i,2]
-        item_table.append(PartDesc(pn,month,year,quantity))
-        print((pn,month,year,quantity))
+        pn = str(df.iloc[i,0])  # Assuming the part name is at index 0
+        quantity = df.iloc[i,2]  # Assuming the quantity is at index 2
+        item_table.append(PartDesc(pn, month, year, quantity))
     
     data = defaultdict(lambda: defaultdict(int))
 
@@ -37,10 +36,14 @@ def get_monthlydem():
         key = (obj.name, obj.month, obj.year)
         data[key]['Total_Quantity'] += obj.quantity
 
-    flattened_data = [{'Name': k[0], 'Month': k[1], 'Year': k[2], 'Total_Quantity': v['Total_Quantity']} for k, v in data.items()]
+    flattened_data = [{'Name': k[0], 'Month': k[1], 'Year': k[2], 'Median Demand': v['Total_Quantity']} for k, v in data.items()]
 
     df = pd.DataFrame(flattened_data)
 
-    df.to_excel('demandbymonth.xlsx', index=False)
+    # Calculate the mean demand for each item across all months and years
+    mean_demand_df = df.groupby('Name')['Median Demand'].median().reset_index()
+
+    # Save the mean demand DataFrame to an Excel file
+    mean_demand_df.to_excel('expected_demand.xlsx', index=False)
     
 get_monthlydem()

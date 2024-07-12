@@ -28,7 +28,7 @@ def create_report(data):
     inventory = inventory[~inventory["SubInv"].str.contains('|'.join(invalid_items))]
     
     q_dict = inventory.set_index("Item Number")["Item Qty"].to_dict()
-    demand_dict = demand.set_index("Name")["Mean Demand"].to_dict()
+    demand_dict = demand.set_index("Name")["Median Demand"].to_dict()
     
     for i in range(len(oor)):
         pn, quantity = oor.iloc[i,7],oor.iloc[i,12]
