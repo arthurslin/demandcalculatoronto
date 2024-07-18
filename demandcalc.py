@@ -40,7 +40,7 @@ def get_monthlydem():
 
     df = pd.DataFrame(flattened_data)
 
-    # Calculate the mean demand for each item across all months and years
+    # Calculate the median demand for each item across all months and years
     mean_demand_df = df.groupby('Name')['Median Demand'].median().reset_index()
 
     # Save the mean demand DataFrame to an Excel file
