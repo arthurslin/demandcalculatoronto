@@ -43,3 +43,5 @@ build/demandcalc/localpycs/pyimod02_importers.pyc
 build/demandcalc/localpycs/pyimod03_ctypes.pyc
 build/demandcalc/localpycs/pyimod04_pywin32.pyc
 demandchart/expected_demand.xlsx
+mosreport19.xlsx
+velocity/Part Velocity -Global and Europe.xlsx
