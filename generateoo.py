@@ -37,6 +37,7 @@ def create_report(data):
 
     # q_dict = inventory.set_index("Item Number")["Item Qty"].to_dict()
     demand_dict = demand.set_index("Name")["Median Demand"].to_dict()
+    vel["PART_NUMBER"] = vel["PART_NUMBER"].astype(str)
     vel_dict = vel.set_index("PART_NUMBER")["Event Class"].to_dict()
     print(vel_dict)
 
@@ -47,7 +48,7 @@ def create_report(data):
     oor["Quantity Due"] = oor["Item Code"].apply(lambda x: df2d.get(x))
 
     for i in range(len(oor)):
-        pn, quantity, price = oor.iloc[i, 7], oor.iloc[i, 12], oor.iloc[i, 17]
+        pn, quantity, price = str(oor.at[i, "Item Code"]), oor.at[i, "Quantity Due"], oor.at[i, "PO Price"]
         if pd.isna(pn) or pd.isna(quantity):
             continue
         if pn in q_dict and pn in demand_dict:
@@ -68,6 +69,10 @@ def create_report(data):
             "Low $" if price < 1000 else "Mid $")
         if pn in vel_dict:
             oor.at[i, "Part Velocity"] = vel_dict[pn]
+            oor.at[i, "Part Class"] = (oor.at[i, "Part Cost"]).replace(
+                " Part", "") + " " + oor.at[i, "Part Velocity"]
+        else:
+            oor.at[i,"Part Velocity"] = "Zero Demand"
             oor.at[i, "Part Class"] = (oor.at[i, "Part Cost"]).replace(
                 " Part", "") + " " + oor.at[i, "Part Velocity"]
 
