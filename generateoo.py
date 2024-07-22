@@ -28,12 +28,12 @@ def create_report(data):
     demand, invalid, inventory, oor, vel = data[0], data[1], data[2], data[3], data[4]
 
     invalid_items = invalid["Invalid Locations"].tolist()
-
     inventory["SubInv"] = inventory["SubInv"].fillna("")
     inventory = inventory[~inventory["SubInv"].str.contains(
         '|'.join(invalid_items))]
-    print(inventory)
-    q_dict = inventory.groupby("Item Number",sort=False)["Item Qty"].sum(numeric_only=False).to_dict()
+
+    q_dict = inventory.groupby("Item Number", sort=False)[
+        "Item Qty"].sum(numeric_only=False).to_dict()
 
     # q_dict = inventory.set_index("Item Number")["Item Qty"].to_dict()
     demand_dict = demand.set_index("Name")["Median Demand"].to_dict()
@@ -47,29 +47,31 @@ def create_report(data):
     oor["Quantity Due"] = oor["Item Code"].apply(lambda x: df2d.get(x))
 
     for i in range(len(oor)):
-        pn, quantity,price = oor.iloc[i, 7], oor.iloc[i, 12], oor.iloc[i,17]
+        pn, quantity, price = oor.iloc[i, 7], oor.iloc[i, 12], oor.iloc[i, 17]
         if pd.isna(pn) or pd.isna(quantity):
             continue
         if pn in q_dict and pn in demand_dict:
             # Subinventory quantity / Monthy Demand mean
             expected_mos = q_dict[pn]/demand_dict[pn]
             after_push = q_dict[pn] - quantity
-            oor.at[i, 'Expected MOS'] = expected_mos.round(0.1)
+            oor.at[i, 'Expected MOS'] = round(expected_mos, 2)
             oor.at[i, 'Inventory Qty - Qty Due'] = after_push
             oor.at[i, "Median Demand"] = demand_dict[pn]
             oor.at[i, "Valid Inventory"] = q_dict[pn]
             thisdate = date.today()
-            new_date = (pd.to_datetime(thisdate)+pd.DateOffset(days=math.floor(expected_mos*30))).date()
+            new_date = (pd.to_datetime(thisdate) +
+                        pd.DateOffset(days=math.floor(expected_mos*30))).date()
             oor.at[i, "Month to Zero Inventory"] = new_date
+            action = "Cancel" if expected_mos >= 6 else "Push Out" if 3 <= expected_mos < 6 else "No Action"
+            oor.at[i, "MOS Action"] = action
+        oor.at[i, "Part Cost"] = "High $" if price > 5000 else (
+            "Low $" if price < 1000 else "Mid $")
         if pn in vel_dict:
-            oor.at[i,"Part Velocty"] = vel_dict[pn]
-        if price > 5000:
-            pass
-        elif price < 1000:
-            pass
-        else: # 1000 < price < 5000
-            pass
+            oor.at[i, "Part Velocity"] = vel_dict[pn]
+            oor.at[i, "Part Class"] = (oor.at[i, "Part Cost"]).replace(
+                " Part", "") + " " + oor.at[i, "Part Velocity"]
 
+    oor.drop(oor[oor['Org Code'] == 'NUS'].index, inplace=True)
     oor = oor.drop_duplicates(subset="Item Code")
 
     oor.to_excel("mosreport.xlsx", index=False)
