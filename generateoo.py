@@ -10,7 +10,8 @@ invaliddir = 'invalid'
 inventorydir = 'inventory'
 oordir = 'oor'
 veloctydir = 'velocity'
-directories = [demanddir, invaliddir, inventorydir, oordir, veloctydir]
+itemmasterdir = 'itemmaster'
+directories = [demanddir, invaliddir, inventorydir, oordir, veloctydir, itemmasterdir]
 
 
 def load_data():
@@ -27,7 +28,7 @@ def load_data():
 
 def create_report(data):
     # Extracting data from input tuple
-    demand, invalid, inventory, oor, vel = data
+    demand, invalid, inventory, oor, vel, itemmaster = data
     
     # Processing invalid items
     invalid_items = invalid["Invalid Locations"].tolist()
@@ -44,6 +45,10 @@ def create_report(data):
     # Preparing velocity dictionary
     vel["PART_NUMBER"] = vel["PART_NUMBER"].astype(str)
     vel_dict = vel.set_index("PART_NUMBER")["Event Class"].to_dict()
+
+    # Preparing item master dictionary
+    itemmaster["Item"] = itemmaster["Item"].astype(str)
+    itemmaster_dict = itemmaster.set_index("Item")["Cumulative Total LT"].to_dict()
     
     # Summarizing out-of-reach quantities
     df2 = oor.groupby("Item Code", sort=False)['Quantity Due'].sum(numeric_only=False)
@@ -55,6 +60,7 @@ def create_report(data):
     demand_dict = defaultdict(int, demand_dict)
     q_dict = defaultdict(int, q_dict)
     vel_dict = defaultdict(lambda: "Zero Demand", vel_dict)
+    itemmaster_dict = defaultdict(int,itemmaster_dict)
     
     # Processing each row in oor DataFrame
     for i in range(len(oor)):
@@ -76,7 +82,7 @@ def create_report(data):
         oor.at[i, 'Inventory Qty - Qty Due'] = after_push
         new_date = (pd.to_datetime(date.today()) + pd.DateOffset(days=math.floor(expected_mos*30))).date()
         oor.at[i, "Month to Zero Inventory"] = new_date
-        
+        oor.at[i, "Cumulative Total LT"] = itemmaster_dict[pn]
         # Updating Part Velocity and Part Class
         oor.at[i, "Part Velocity"] = vel_dict[pn]
         oor.at[i, "Part Class"] = oor.at[i, "Part Cost"].replace(" Part", "") + " " + oor.at[i, "Part Velocity"]
@@ -86,5 +92,6 @@ def create_report(data):
 
     oor.to_excel("mosreport.xlsx", index=False)
 
-
+print("Starting Generation.")
 create_report(load_data())
+print("Generation Complete")
